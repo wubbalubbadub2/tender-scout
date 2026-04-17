@@ -1,0 +1,15 @@
+app = "tenderscout-bot"
+primary_region = "fra"
+
+[build]
+
+[env]
+  PYTHONUNBUFFERED = "1"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+  cpus = 1
+
+# Worker app (long-polling Telegram bot) — no [http_service].
+# Machines restart automatically on crash.
