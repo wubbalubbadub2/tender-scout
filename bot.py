@@ -17,6 +17,7 @@ from telegram.ext import (
 
 from extractors import extract
 from analyzer import analyze
+from keywords_list import KEYWORDS_MESSAGE
 
 load_dotenv()
 
@@ -165,6 +166,12 @@ async def cancel(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 
+async def keywords_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    if not allowed(update.effective_user.id):
+        return
+    await update.message.reply_text(KEYWORDS_MESSAGE)
+
+
 async def fallback_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "Не понял. Начни с /start и пришли документ техзадания."
@@ -190,6 +197,7 @@ def main() -> None:
         per_chat=True,
     )
 
+    app.add_handler(CommandHandler("keywords", keywords_cmd))
     app.add_handler(conv)
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback_text))
 
