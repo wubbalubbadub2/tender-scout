@@ -48,6 +48,15 @@ def safe_basename(name: str) -> str:
     return stem[:80] or "tender"
 
 
+HELP_TEXT = (
+    "Команды:\n"
+    "/start — начать анализ ТЗ (пришли документ, потом ссылку)\n"
+    "/keywords — ключевые слова для поиска лотов\n"
+    "/cancel — отменить текущий анализ\n"
+    "/help — это сообщение"
+)
+
+
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
     if not allowed(update.effective_user.id):
         await update.message.reply_text("Нет доступа.")
@@ -55,7 +64,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
     ctx.user_data.clear()
     await update.message.reply_text(
         "Привет. Пришли документ техзадания (PDF или DOCX).\n"
-        "Используй /cancel чтобы отменить."
+        "Команды: /keywords — ключевые слова, /cancel — отмена."
     )
     return WAITING_DOC
 
@@ -172,6 +181,18 @@ async def keywords_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(KEYWORDS_MESSAGE)
 
 
+async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    if not allowed(update.effective_user.id):
+        return
+    await update.message.reply_text(HELP_TEXT)
+
+
+async def unknown_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    if not allowed(update.effective_user.id):
+        return
+    await update.message.reply_text(f"Не знаю такую команду.\n\n{HELP_TEXT}")
+
+
 async def fallback_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "Не понял. Начни с /start и пришли документ техзадания."
@@ -198,8 +219,10 @@ def main() -> None:
     )
 
     app.add_handler(CommandHandler("keywords", keywords_cmd))
+    app.add_handler(CommandHandler("help", help_cmd))
     app.add_handler(conv)
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback_text))
+    app.add_handler(MessageHandler(filters.COMMAND, unknown_cmd))
 
     log.info("Bot starting, output chat = %s", OUTPUT_CHAT_ID)
 
